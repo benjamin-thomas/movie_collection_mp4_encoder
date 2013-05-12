@@ -1,0 +1,1 @@
+./HandBrakeCLI -i DVD -o ~/Movies/movie.mp4 --optimize -e x264 -q 20.0 -r 29.97 --pfr  -a 1 -E faac -B 160 -6 dpl2 -R Auto -D 0.0 -f mp4 -4 -X 1024 --loose-anamorphic -m --srt-file movie.srt
