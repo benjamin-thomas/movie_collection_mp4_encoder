@@ -26,6 +26,7 @@ class MovieFinder
   def self.next_candidate
     find_all.each do |movie_path|
       movie = Movie.new(movie_path)
+      # try with if movie.has_encoded_version; next --- and then return the movie object
       unless movie.has_been_encoded_to_mp4?
         return movie
       end
@@ -46,6 +47,9 @@ end
 #################
 
 class Movie
+  attr_reader :mkv_path
+  alias :path :mkv_path
+
   def initialize(movie_path)
     @mkv_path = movie_path
     @srt_path = movie_path[0..-4] + "srt"
@@ -63,6 +67,7 @@ class Movie
 
   def encode_for_tablet!
     # The splat operator converts an Array to String
+    # TODO: delegate to object Encoder.encode(self)
     system "HandBrakeCLI", *encoding_params
     # TODO: catch control c and don't move
     FileUtils.mv @wip_path, @mp4_path
@@ -78,7 +83,8 @@ class Movie
     input_output_opt = %W( -i #{@mkv_path} -o #{@wip_path} )
     encoding_opt = EncodingPresets::IPAD
     if has_srt?
-      srt_opt = %W( --srt-file #{@srt_path} )
+      # TODO: handle different languages (*en.srt, *fr.srt, etc.)
+      srt_opt = %W( --srt-file #{@srt_path} --srt-lang en )
       all_opt = input_output_opt + encoding_opt + srt_opt
     else
       all_opt = input_output_opt + encoding_opt
@@ -93,6 +99,16 @@ end
 #  Script start  #
 ##################
 
-movie = MovieFinder.next_candidate
-#movie.encode_for_tablet!
-require 'pry' ; binding.pry
+while(movie = MovieFinder.next_candidate)
+  #require 'pry' ; binding.pry ; exit
+  puts "Encoding #{movie.path}".blue
+  sleep 5
+  movie.encode_for_tablet!
+end
+
+puts <<-EOF.green
+************************************
+*  All movies have been encoded!!  *
+************************************
+EOF
+
