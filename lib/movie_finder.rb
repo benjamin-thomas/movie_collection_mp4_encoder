@@ -1,5 +1,6 @@
 require_relative 'movie'
 require_relative 'app_config'
+require 'find'
 
 class MovieFinder
   # This construct allows to define private class methods without having to
@@ -17,14 +18,18 @@ class MovieFinder
       end
     end
 
-    #private
-
     def all_movies
-      movies_dir = File.expand_path AppConfig.movies_root
+      return to_enum(__callee__) unless block_given?
 
-      #TODO: filter *sample.mkv files"
-      Dir.glob(movies_dir + "/**/*.mkv")
+      Find.find(movies_root).select do |path|
+        yield path if Movie.new(path).valid?
+      end
     end
+
+    def movies_root
+      File.expand_path AppConfig.movies_root
+    end
+
 
   end
 end
