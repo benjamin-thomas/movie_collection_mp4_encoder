@@ -1,42 +1,30 @@
 require_relative 'movie'
+require_relative 'app_config'
 
 class MovieFinder
-  MOVIES_ROOT = "~xbmc/videos/movies"
-  MOVIES_DIR = File.expand_path MOVIES_ROOT
+  # This construct allows to define private class methods without having to
+  # declare them with 'private_class_method'
+  class << self
 
-  def self.next_candidate
-    # Use with a while loop
-    all_movies.each do |movie_path|
-      movie = Movie.new(movie_path)
-      unless movie.has_been_encoded_to_mp4?
-        return movie
+    def candidates_for_encoding
+      # Makes method chaining possible
+      return to_enum(__callee__) unless block_given?
+
+      # select won't return all_movies array at the end of block like each
+      all_movies.select do |movie_path|
+        movie = Movie.new(movie_path)
+        yield movie unless movie.has_been_encoded_to_mp4?
       end
     end
-    nil
-  end
 
-  def self.candidates_for_encoding
-    # Use with a block
-    all_movies.each do |movie_path|
-      movie = Movie.new(movie_path)
-      yield movie unless movie.has_been_encoded_to_mp4?
+    #private
+
+    def all_movies
+      movies_dir = File.expand_path AppConfig.movies_root
+
+      #TODO: filter *sample.mkv files"
+      Dir.glob(movies_dir + "/**/*.mkv")
     end
-    nil
-  end
 
-  def self.all_candidates
-    # Use with #each
-    all_movies.map do |movie_path|
-      Movie.new(movie_path)
-    end.select do |movie|
-      !movie.has_been_encoded_to_mp4?
-    end
-  end
-
-  private
-
-  def self.all_movies
-    #TODO: filter *sample.mkv files"
-    Dir.glob(MOVIES_DIR + "/**/*.mkv")
   end
 end
