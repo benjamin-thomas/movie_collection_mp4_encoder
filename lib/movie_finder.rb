@@ -22,7 +22,7 @@ class MovieFinder
       return to_enum(__callee__) unless block_given?
 
       Find.find(movies_root).select do |path|
-        yield path if Movie.new(path).valid?
+        yield path if is_valid_movie?(path)
       end
     end
 
@@ -30,6 +30,12 @@ class MovieFinder
       File.expand_path AppConfig.movies_root
     end
 
+    def is_valid_movie?(path)
+      fn = File.basename(path).downcase
+      fn.end_with?(".mkv") or
+        fn.end_with?(".avi") and
+        !fn.include?("sample")
+    end
 
   end
 end

@@ -29,13 +29,6 @@ class Movie
     #FileUtils.mv @wip_path, @mp4_path
   end
 
-  def valid?
-    f = @filename.downcase
-    f.end_with?(".mkv") or
-      f.end_with?(".avi") and
-      !f.include?("sample")
-  end
-
   private
 
   def encoding_params

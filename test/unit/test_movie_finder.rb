@@ -1,54 +1,52 @@
 #!/usr/bin/env ruby
 
-require_relative '../minitest_helper'
+require_relative '../test_helper'
 require_relative '../../lib/movie_finder'
-
-require 'tempfile'
 
 class TestMovieFinder < MiniTest::Unit::TestCase
 
   def setup
-    #require 'pry' ; binding.pry
   end
 
-  def enter_sandbox
-    Dir.mktmpdir "TestMovieFinder" do |tmp_dir|
-      @sandbox_dir = tmp_dir
-
-      MovieFinder.stub(:movies_root, @sandbox_dir) do
-        yield
+  def test_it_has_somewhere_to_look
+    SandboxEnvironment.new do |sandbox|
+      MovieFinder.stub(:movies_root, sandbox.root) do
+        assert File.directory?(MovieFinder.movies_root)
       end
     end
   end
 
-  def create_bogus_movie(movie_name, *movie_files)
-    movie_dir = "#{@sandbox_dir}/#{movie_name}"
-    Dir.mkdir movie_dir
-    movie_files.each do |movie_file|
-      FileUtils.touch "#{movie_dir}/#{movie_file}"
-    end
+  def test_it_can_detect_valid_movies_via_path
+    assert MovieFinder.is_valid_movie?("/bogus/movie.mkv")
+    assert MovieFinder.is_valid_movie?("/bogus/movie.avi")
+    refute MovieFinder.is_valid_movie?("/bogus/movie-sample.srt")
+    refute MovieFinder.is_valid_movie?("/bogus/movie-SAMPLE.mkv")
+    refute MovieFinder.is_valid_movie?("/bogus/movie-SAMPLE.mkv")
+    refute MovieFinder.is_valid_movie?("/bogus/sample-movie.mkv")
+    refute MovieFinder.is_valid_movie?("/bogus/movie.srt")
   end
 
-  def test_it_has_somewhere_to_look
-    assert File.directory?(MovieFinder.movies_root)
-  end
 
   def test_it_finds_all_movies
-    enter_sandbox do
-      create_bogus_movie("Hugo", "Hugo.mkv", "Hugo.srt")
-      create_bogus_movie("Up", "Up.mkv", "Up.srt")
-      create_bogus_movie("Battleship", "Battleship, the movie.mkv")
-      create_bogus_movie("Bambi", "Bambi.avi")
+    SandboxEnvironment.new do |sandbox|
+      MovieFinder.stub(:movies_root, sandbox.root) do
+        sandbox.create_bogus_movie("Hugo", extensions: [:mkv, :srt])
+        sandbox.create_bogus_movie("Up", extensions: [:mkv, :srt])
+        sandbox.create_bogus_movie("Battleship", extra_files: ["Battleship, the movie.mkv"])
+        sandbox.create_bogus_movie("Bambi", extensions: [:avi])
 
-      assert_equal 4, MovieFinder.all_movies.count
+        assert_equal 4, MovieFinder.all_movies.count
+      end
     end
   end
 
   def test_it_doesnt_count_samples_as_a_movie
-    enter_sandbox do
-      create_bogus_movie( "Batman", "Batman.mkv", "Batman-sample.mkv", "Batman SAMPLE.mkv", "Batman.srt")
+    SandboxEnvironment.new do |sandbox|
+      MovieFinder.stub(:movies_root, sandbox.root) do
+        sandbox.create_bogus_movie( "Batman", extensions: [:mkv, :srt], extra_files: ["Batman-sample.mkv", "Batman SAMPLE.mkv"])
 
-      assert_equal 1, MovieFinder.all_movies.count
+        assert_equal 1, MovieFinder.all_movies.count
+      end
     end
   end
 
