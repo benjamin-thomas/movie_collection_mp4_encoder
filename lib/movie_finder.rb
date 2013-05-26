@@ -27,7 +27,8 @@ class MovieFinder
     end
 
     def movies_root
-      File.expand_path AppConfig.movies_root
+      movies_root = File.expand_path AppConfig.movies_root
+      raise "#{movies_root} does not exist!" unless Dir.exist? movies_root
     end
 
     def is_valid_movie_path?(path)

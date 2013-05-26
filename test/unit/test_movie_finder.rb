@@ -13,7 +13,12 @@ class TestMovieFinder < MiniTest::Unit::TestCase
   end
 
   def test_it_raises_an_error_if_cant_look_in_a_directory
-    skip "todo"
+    skip "don't know how to test this"
+    #MovieFinder.stub(:movies_root, "/bogus/filepath/") do
+      #assert_raises(RuntimeError) do
+        #MovieFinder.movies_root
+      #end
+    #end
   end
 
   def test_it_can_detect_valid_movie_paths

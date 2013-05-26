@@ -5,9 +5,6 @@ require 'tempfile'
 
 class Sandbox
 
-  # SandboxEnvironment.new do |sandbox|
-  #   sandbox.create_bogus_movie("Batman", extensions: [:mkv, :mp4])
-  # end
   def initialize
     setup_sandbox
     yield(self)
