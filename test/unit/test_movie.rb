@@ -6,14 +6,13 @@ require_relative '../../lib/movie'
 describe Movie do
 
   it "can tell if it has subtitles" do
-    SandboxEnvironment.new do |sandbox|
+    Sandbox.new do |sandbox|
 
-      FakeMovie.new.create_in(sandbox.root) do |fm|
-        fm.name = "Batman"
-        extensions = [:mkv, :srt]
-      end
+      fake_movie = FakeMovie.new("Batman", extensions: [:mkv, :srt])
+      sandbox.create_fake_movie(fake_movie)
 
-      movie = Movie.new("#{sandbox.root}/Batman")
+      movie = Movie.new("#{sandbox.root}/Batman/Batman.mkv")
+      require 'pry' ; binding.pry
       assert movie.has_subtitles?
     end
   end

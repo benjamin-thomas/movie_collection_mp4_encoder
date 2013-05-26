@@ -9,46 +9,38 @@ class TestMovieFinder < MiniTest::Unit::TestCase
   end
 
   def test_it_has_somewhere_to_look
-    SandboxEnvironment.new do |sandbox|
-      MovieFinder.stub(:movies_root, sandbox.root) do
-        assert File.directory?(MovieFinder.movies_root)
-      end
-    end
+    assert MovieFinder.respond_to? :movies_root
   end
 
-  def test_it_can_detect_valid_movies_via_path
-    assert MovieFinder.is_valid_movie?("/bogus/movie.mkv")
-    assert MovieFinder.is_valid_movie?("/bogus/movie.avi")
-    refute MovieFinder.is_valid_movie?("/bogus/movie-sample.srt")
-    refute MovieFinder.is_valid_movie?("/bogus/movie-SAMPLE.mkv")
-    refute MovieFinder.is_valid_movie?("/bogus/movie-SAMPLE.mkv")
-    refute MovieFinder.is_valid_movie?("/bogus/sample-movie.mkv")
-    refute MovieFinder.is_valid_movie?("/bogus/movie.srt")
+  def test_it_raises_an_error_if_cant_look_in_a_directory
+    skip "todo"
+  end
+
+  def test_it_can_detect_valid_movie_paths
+    assert MovieFinder.is_valid_movie_path?("/bogus/movie.mkv")
+    assert MovieFinder.is_valid_movie_path?("/bogus/movie.avi")
+
+    refute MovieFinder.is_valid_movie_path?("/bogus/movie-sample.srt")
+    refute MovieFinder.is_valid_movie_path?("/bogus/movie-SAMPLE.mkv")
+    refute MovieFinder.is_valid_movie_path?("/bogus/movie-SAMPLE.mkv")
+    refute MovieFinder.is_valid_movie_path?("/bogus/sample-movie.mkv")
+    refute MovieFinder.is_valid_movie_path?("/bogus/movie.srt")
   end
 
 
   def test_it_finds_all_movies
-    SandboxEnvironment.new do |sandbox|
+    Sandbox.new do |sandbox|
       MovieFinder.stub(:movies_root, sandbox.root) do
 
-        FakeMovie.new.create_in(sandbox.root) do |fm|
-          fm.name = "Hugo"
-          fm.extensions = [:mkv, :srt]
-        end
+        hugo = FakeMovie.new("Hugo", extensions: [:mkv, :srt], extra_files: ["subsearch-results.txt"])
+        up = FakeMovie.new("Up", extensions: [:mkv, :srt])
+        battleship = FakeMovie.new("Battleship", extra_files: ["Battleship, the movie.mkv"])
+        bambi = FakeMovie.new("Bambi", extensions: [:avi])
 
-        FakeMovie.new.create_in(sandbox.root) do |fm|
-          fm.name = "Up"
-          fm.extensions = [:mkv, :srt]
-        end
+        fake_movies = [hugo, up, battleship, bambi]
 
-        FakeMovie.new.create_in(sandbox.root) do |fm|
-          fm.name = "Battleship"
-          fm.extra_files = ["Battleship, the movie.mkv"]
-        end
-
-        FakeMovie.new.create_in(sandbox.root) do |fm|
-          fm.name = "Bambi"
-          fm.extensions = [:avi]
+        fake_movies.each do |fm|
+          sandbox.create_fake_movie(fm)
         end
 
         assert_equal 4, MovieFinder.all_movies.count
@@ -57,14 +49,13 @@ class TestMovieFinder < MiniTest::Unit::TestCase
   end
 
   def test_it_doesnt_count_samples_as_a_movie
-    SandboxEnvironment.new do |sandbox|
+    Sandbox.new do |sandbox|
       MovieFinder.stub(:movies_root, sandbox.root) do
 
-        FakeMovie.new.create_in(sandbox.root) do |fm|
-          fm.name = "Batman"
-          fm.extensions = [:mkv, :srt]
-          fm.extra_files = ["Batman-sample.mkv", "Batman SAMPLE.mkv"]
-        end
+        batman = FakeMovie.new("Batman", extensions: [:mkv, :srt],
+                                         extra_files: ["Batman-sample.mkv", "Batman SAMPLE.mkv"])
+
+        sandbox.create_fake_movie(batman)
 
         assert_equal 1, MovieFinder.all_movies.count
       end
