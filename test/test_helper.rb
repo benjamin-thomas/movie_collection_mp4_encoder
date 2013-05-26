@@ -3,65 +3,17 @@ require 'minitest/pride'
 
 require 'tempfile'
 
-class MovieFinder
-  def self.movies_root
-    "/will/be/stubbed/with/sandbox/dir"
-  end
-end
-
-class Sandbox
-
-  class << self
-
-    def enter
-      Dir.mktmpdir "TestMovieFinder" do |sandbox_dir|
-        @@sandbox_dir = sandbox_dir
-        MovieFinder.stub(:movies_root, sandbox_dir) do
-          yield
-        end
-      end
-    end
-
-    def create_bogus_movie(movie_name, *movie_files)
-      movie_dir = "#{@@sandbox_dir}/#{movie_name}"
-      Dir.mkdir movie_dir
-      movie_files.each do |movie_file|
-        FileUtils.touch "#{movie_dir}/#{movie_file}"
-      end
-    end
-
-  end
-
-end
-
 class SandboxEnvironment
 
-  # Use like this
   # SandboxEnvironment.new do |sandbox|
   #   sandbox.create_bogus_movie("Batman", extensions: [:mkv, :mp4])
   # end
   attr_reader :root
 
   def initialize
-    #MovieFinder.stub(:movies_root, @root) do
     setup_sandbox
     yield(self)
     destroy_sandbox
-    #end
-  end
-
-  def create_bogus_movie(movie_name, extensions: [], extra_files: [])
-    movie_dir = "#{@root}/#{movie_name}"
-
-    Dir.mkdir movie_dir
-
-    extensions.each do |ext|
-      FileUtils.touch "#{movie_dir}/#{movie_name}.#{ext}"
-    end
-
-    extra_files.each do |file|
-      FileUtils.touch "#{movie_dir}/#{file}"
-    end
   end
 
   private
@@ -72,6 +24,47 @@ class SandboxEnvironment
 
   def destroy_sandbox
     FileUtils.rm_r @root
+  end
+
+end
+
+
+class FakeMovie
+  attr_accessor :name, :extensions, :extra_files
+
+  def create_in(temp_folder)
+    @temp_folder = temp_folder
+    yield(self)
+    create_fake_files
+  end
+
+
+  private
+
+  def create_fake_files
+    create_movie_dir
+    create_movie_extensions
+    create_movie_extra_files
+  end
+
+  def create_movie_dir
+    Dir.mkdir "#{@temp_folder}/#{@name}"
+  end
+
+  def create_movie_extensions
+    return if @extensions.nil?
+
+    @extensions.each do |ext|
+      FileUtils.touch "#{@temp_folder}/#{@name}/#{@name}.#{ext}"
+    end
+  end
+
+  def create_movie_extra_files
+    return if @extra_files.nil?
+
+    @extra_files.each do |file|
+      FileUtils.touch "#{@temp_folder}/#{@name}/#{file}"
+    end
   end
 
 end

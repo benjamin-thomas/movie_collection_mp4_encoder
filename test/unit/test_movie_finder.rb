@@ -30,10 +30,26 @@ class TestMovieFinder < MiniTest::Unit::TestCase
   def test_it_finds_all_movies
     SandboxEnvironment.new do |sandbox|
       MovieFinder.stub(:movies_root, sandbox.root) do
-        sandbox.create_bogus_movie("Hugo", extensions: [:mkv, :srt])
-        sandbox.create_bogus_movie("Up", extensions: [:mkv, :srt])
-        sandbox.create_bogus_movie("Battleship", extra_files: ["Battleship, the movie.mkv"])
-        sandbox.create_bogus_movie("Bambi", extensions: [:avi])
+
+        FakeMovie.new.create_in(sandbox.root) do |fm|
+          fm.name = "Hugo"
+          fm.extensions = [:mkv, :srt]
+        end
+
+        FakeMovie.new.create_in(sandbox.root) do |fm|
+          fm.name = "Up"
+          fm.extensions = [:mkv, :srt]
+        end
+
+        FakeMovie.new.create_in(sandbox.root) do |fm|
+          fm.name = "Battleship"
+          fm.extra_files = ["Battleship, the movie.mkv"]
+        end
+
+        FakeMovie.new.create_in(sandbox.root) do |fm|
+          fm.name = "Bambi"
+          fm.extensions = [:avi]
+        end
 
         assert_equal 4, MovieFinder.all_movies.count
       end
@@ -43,7 +59,12 @@ class TestMovieFinder < MiniTest::Unit::TestCase
   def test_it_doesnt_count_samples_as_a_movie
     SandboxEnvironment.new do |sandbox|
       MovieFinder.stub(:movies_root, sandbox.root) do
-        sandbox.create_bogus_movie( "Batman", extensions: [:mkv, :srt], extra_files: ["Batman-sample.mkv", "Batman SAMPLE.mkv"])
+
+        FakeMovie.new.create_in(sandbox.root) do |fm|
+          fm.name = "Batman"
+          fm.extensions = [:mkv, :srt]
+          fm.extra_files = ["Batman-sample.mkv", "Batman SAMPLE.mkv"]
+        end
 
         assert_equal 1, MovieFinder.all_movies.count
       end
