@@ -29,6 +29,14 @@ class Movie
     #FileUtils.mv @wip_path, @mp4_path
   end
 
+  def needs_encoding?
+    !has_been_encoded_to_mp4? && size_in_gb > 3
+  end
+
+  def size_in_gb
+    File.size(@filepath) / 1024.0 ** 3
+  end
+
   private
 
   def encoding_params

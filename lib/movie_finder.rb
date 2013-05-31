@@ -14,7 +14,7 @@ class MovieFinder
       # select won't return all_movies array at the end of block like each
       all_movies.select do |movie_path|
         movie = Movie.new(movie_path)
-        yield movie unless movie.has_been_encoded_to_mp4?
+        yield movie if movie.needs_encoding?
       end
     end
 
