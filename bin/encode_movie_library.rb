@@ -4,7 +4,7 @@ require 'fileutils'
 require 'colored'
 require_relative '../lib/movie_finder'
 
-while(movie = MovieFinder.next_candidate)
+MovieFinder.candidates_for_encoding do |movie|
   #require 'pry' ; binding.pry ; exit
   puts "Encoding #{movie.path}".blue
   sleep 5

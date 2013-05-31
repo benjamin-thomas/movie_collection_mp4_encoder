@@ -24,7 +24,7 @@ class Movie
   def encode_for_tablet!
     # The splat operator converts an Array to String
     # TODO: delegate to object Encoder.encode(self)
-    system "echo HandBrakeCLI", *encoding_params
+    system "HandBrakeCLI", *encoding_params
     # TODO: catch control c and don't move
     #FileUtils.mv @wip_path, @mp4_path
   end
