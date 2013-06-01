@@ -34,7 +34,17 @@ class MovieFinder
 
     def is_valid_movie_path?(path)
       fn = File.basename(path).downcase
-      fn =~ /\.(mkv|avi)/ && !fn.include?("sample")
+      fn =~ valid_extensions_regex && !fn.include?("sample")
+    end
+
+    private
+
+    def valid_extensions
+      %w( mkv avi )
+    end
+
+    def valid_extensions_regex
+      /\.(#{valid_extensions.join("|")})\z/
     end
 
   end

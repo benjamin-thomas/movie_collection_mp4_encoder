@@ -30,6 +30,8 @@ class TestMovieFinder < MiniTest::Unit::TestCase
     refute MovieFinder.is_valid_movie_path?("/bogus/movie-SAMPLE.mkv")
     refute MovieFinder.is_valid_movie_path?("/bogus/sample-movie.mkv")
     refute MovieFinder.is_valid_movie_path?("/bogus/movie.srt")
+    refute MovieFinder.is_valid_movie_path?("/bogus/movie.avi.info.txt")
+    refute MovieFinder.is_valid_movie_path?("/bogus/movie.avi\n")
   end
 
 
