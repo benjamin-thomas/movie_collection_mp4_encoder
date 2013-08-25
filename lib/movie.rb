@@ -23,10 +23,10 @@ class Movie
 
   def encode_for_tablet!
     # The splat operator converts an Array to String
-    # TODO: delegate to object Encoder.encode(self)
+    # TODO: delegate to object Encoder.new(self).encode
     system "HandBrakeCLI", *encoding_params
     # TODO: catch control c and don't move
-    #FileUtils.mv @wip_path, @mp4_path
+    FileUtils.mv @wip_path, @mp4_path
   end
 
   def needs_encoding?
