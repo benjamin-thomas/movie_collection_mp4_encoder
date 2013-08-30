@@ -6,6 +6,12 @@ require_relative '../lib/movie_finder'
 
 MovieFinder.candidates_for_encoding do |movie|
 
+  if File.exist? "/tmp/stop_encoding"
+    puts "> Stop encoding requested, exiting.".red
+    puts "> Please remove /tmp/stop_encoding to cancel this behavior".red
+    exit
+  end
+
   priority_mode = false
   tmp_priority_file = "/tmp/encode_this_movie"
 
